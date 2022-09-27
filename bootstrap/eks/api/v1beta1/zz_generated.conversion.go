@@ -37,6 +37,16 @@ func init() {
 // RegisterConversions adds conversion functions to the given scheme.
 // Public to allow building arbitrary schemes.
 func RegisterConversions(s *runtime.Scheme) error {
+	if err := s.AddGeneratedConversionFunc((*DiskSetup)(nil), (*v1beta2.DiskSetup)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_DiskSetup_To_v1beta2_DiskSetup(a.(*DiskSetup), b.(*v1beta2.DiskSetup), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1beta2.DiskSetup)(nil), (*DiskSetup)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta2_DiskSetup_To_v1beta1_DiskSetup(a.(*v1beta2.DiskSetup), b.(*DiskSetup), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*EKSConfig)(nil), (*v1beta2.EKSConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1beta1_EKSConfig_To_v1beta2_EKSConfig(a.(*EKSConfig), b.(*v1beta2.EKSConfig), scope)
 	}); err != nil {
@@ -117,6 +127,66 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*File)(nil), (*v1beta2.File)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_File_To_v1beta2_File(a.(*File), b.(*v1beta2.File), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1beta2.File)(nil), (*File)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta2_File_To_v1beta1_File(a.(*v1beta2.File), b.(*File), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*FileSource)(nil), (*v1beta2.FileSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_FileSource_To_v1beta2_FileSource(a.(*FileSource), b.(*v1beta2.FileSource), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1beta2.FileSource)(nil), (*FileSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta2_FileSource_To_v1beta1_FileSource(a.(*v1beta2.FileSource), b.(*FileSource), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*Filesystem)(nil), (*v1beta2.Filesystem)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_Filesystem_To_v1beta2_Filesystem(a.(*Filesystem), b.(*v1beta2.Filesystem), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1beta2.Filesystem)(nil), (*Filesystem)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta2_Filesystem_To_v1beta1_Filesystem(a.(*v1beta2.Filesystem), b.(*Filesystem), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*NTP)(nil), (*v1beta2.NTP)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_NTP_To_v1beta2_NTP(a.(*NTP), b.(*v1beta2.NTP), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1beta2.NTP)(nil), (*NTP)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta2_NTP_To_v1beta1_NTP(a.(*v1beta2.NTP), b.(*NTP), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*Partition)(nil), (*v1beta2.Partition)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_Partition_To_v1beta2_Partition(a.(*Partition), b.(*v1beta2.Partition), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1beta2.Partition)(nil), (*Partition)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta2_Partition_To_v1beta1_Partition(a.(*v1beta2.Partition), b.(*Partition), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*PasswdSource)(nil), (*v1beta2.PasswdSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_PasswdSource_To_v1beta2_PasswdSource(a.(*PasswdSource), b.(*v1beta2.PasswdSource), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1beta2.PasswdSource)(nil), (*PasswdSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta2_PasswdSource_To_v1beta1_PasswdSource(a.(*v1beta2.PasswdSource), b.(*PasswdSource), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*PauseContainer)(nil), (*v1beta2.PauseContainer)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1beta1_PauseContainer_To_v1beta2_PauseContainer(a.(*PauseContainer), b.(*v1beta2.PauseContainer), scope)
 	}); err != nil {
@@ -127,7 +197,59 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*SecretFileSource)(nil), (*v1beta2.SecretFileSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_SecretFileSource_To_v1beta2_SecretFileSource(a.(*SecretFileSource), b.(*v1beta2.SecretFileSource), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1beta2.SecretFileSource)(nil), (*SecretFileSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta2_SecretFileSource_To_v1beta1_SecretFileSource(a.(*v1beta2.SecretFileSource), b.(*SecretFileSource), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*SecretPasswdSource)(nil), (*v1beta2.SecretPasswdSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_SecretPasswdSource_To_v1beta2_SecretPasswdSource(a.(*SecretPasswdSource), b.(*v1beta2.SecretPasswdSource), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1beta2.SecretPasswdSource)(nil), (*SecretPasswdSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta2_SecretPasswdSource_To_v1beta1_SecretPasswdSource(a.(*v1beta2.SecretPasswdSource), b.(*SecretPasswdSource), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*User)(nil), (*v1beta2.User)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_User_To_v1beta2_User(a.(*User), b.(*v1beta2.User), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1beta2.User)(nil), (*User)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta2_User_To_v1beta1_User(a.(*v1beta2.User), b.(*User), scope)
+	}); err != nil {
+		return err
+	}
 	return nil
+}
+
+func autoConvert_v1beta1_DiskSetup_To_v1beta2_DiskSetup(in *DiskSetup, out *v1beta2.DiskSetup, s conversion.Scope) error {
+	out.Partitions = *(*[]v1beta2.Partition)(unsafe.Pointer(&in.Partitions))
+	out.Filesystems = *(*[]v1beta2.Filesystem)(unsafe.Pointer(&in.Filesystems))
+	return nil
+}
+
+// Convert_v1beta1_DiskSetup_To_v1beta2_DiskSetup is an autogenerated conversion function.
+func Convert_v1beta1_DiskSetup_To_v1beta2_DiskSetup(in *DiskSetup, out *v1beta2.DiskSetup, s conversion.Scope) error {
+	return autoConvert_v1beta1_DiskSetup_To_v1beta2_DiskSetup(in, out, s)
+}
+
+func autoConvert_v1beta2_DiskSetup_To_v1beta1_DiskSetup(in *v1beta2.DiskSetup, out *DiskSetup, s conversion.Scope) error {
+	out.Partitions = *(*[]Partition)(unsafe.Pointer(&in.Partitions))
+	out.Filesystems = *(*[]Filesystem)(unsafe.Pointer(&in.Filesystems))
+	return nil
+}
+
+// Convert_v1beta2_DiskSetup_To_v1beta1_DiskSetup is an autogenerated conversion function.
+func Convert_v1beta2_DiskSetup_To_v1beta1_DiskSetup(in *v1beta2.DiskSetup, out *DiskSetup, s conversion.Scope) error {
+	return autoConvert_v1beta2_DiskSetup_To_v1beta1_DiskSetup(in, out, s)
 }
 
 func autoConvert_v1beta1_EKSConfig_To_v1beta2_EKSConfig(in *EKSConfig, out *v1beta2.EKSConfig, s conversion.Scope) error {
@@ -193,6 +315,14 @@ func autoConvert_v1beta1_EKSConfigSpec_To_v1beta2_EKSConfigSpec(in *EKSConfigSpe
 	out.PauseContainer = (*v1beta2.PauseContainer)(unsafe.Pointer(in.PauseContainer))
 	out.UseMaxPods = (*bool)(unsafe.Pointer(in.UseMaxPods))
 	out.ServiceIPV6Cidr = (*string)(unsafe.Pointer(in.ServiceIPV6Cidr))
+	out.PreBootstrapCommands = *(*[]string)(unsafe.Pointer(&in.PreBootstrapCommands))
+	out.PostBootstrapCommands = *(*[]string)(unsafe.Pointer(&in.PostBootstrapCommands))
+	out.BootstrapCommandOverride = (*string)(unsafe.Pointer(in.BootstrapCommandOverride))
+	out.Files = *(*[]v1beta2.File)(unsafe.Pointer(&in.Files))
+	out.DiskSetup = (*v1beta2.DiskSetup)(unsafe.Pointer(in.DiskSetup))
+	out.Mounts = *(*[]v1beta2.MountPoints)(unsafe.Pointer(&in.Mounts))
+	out.Users = *(*[]v1beta2.User)(unsafe.Pointer(&in.Users))
+	out.NTP = (*v1beta2.NTP)(unsafe.Pointer(in.NTP))
 	return nil
 }
 
@@ -210,6 +340,14 @@ func autoConvert_v1beta2_EKSConfigSpec_To_v1beta1_EKSConfigSpec(in *v1beta2.EKSC
 	out.PauseContainer = (*PauseContainer)(unsafe.Pointer(in.PauseContainer))
 	out.UseMaxPods = (*bool)(unsafe.Pointer(in.UseMaxPods))
 	out.ServiceIPV6Cidr = (*string)(unsafe.Pointer(in.ServiceIPV6Cidr))
+	out.PreBootstrapCommands = *(*[]string)(unsafe.Pointer(&in.PreBootstrapCommands))
+	out.PostBootstrapCommands = *(*[]string)(unsafe.Pointer(&in.PostBootstrapCommands))
+	out.BootstrapCommandOverride = (*string)(unsafe.Pointer(in.BootstrapCommandOverride))
+	out.Files = *(*[]File)(unsafe.Pointer(&in.Files))
+	out.DiskSetup = (*DiskSetup)(unsafe.Pointer(in.DiskSetup))
+	out.Mounts = *(*[]MountPoints)(unsafe.Pointer(&in.Mounts))
+	out.Users = *(*[]User)(unsafe.Pointer(&in.Users))
+	out.NTP = (*NTP)(unsafe.Pointer(in.NTP))
 	return nil
 }
 
@@ -344,6 +482,166 @@ func Convert_v1beta2_EKSConfigTemplateSpec_To_v1beta1_EKSConfigTemplateSpec(in *
 	return autoConvert_v1beta2_EKSConfigTemplateSpec_To_v1beta1_EKSConfigTemplateSpec(in, out, s)
 }
 
+func autoConvert_v1beta1_File_To_v1beta2_File(in *File, out *v1beta2.File, s conversion.Scope) error {
+	out.Path = in.Path
+	out.Owner = in.Owner
+	out.Permissions = in.Permissions
+	out.Encoding = v1beta2.Encoding(in.Encoding)
+	out.Append = in.Append
+	out.Content = in.Content
+	out.ContentFrom = (*v1beta2.FileSource)(unsafe.Pointer(in.ContentFrom))
+	return nil
+}
+
+// Convert_v1beta1_File_To_v1beta2_File is an autogenerated conversion function.
+func Convert_v1beta1_File_To_v1beta2_File(in *File, out *v1beta2.File, s conversion.Scope) error {
+	return autoConvert_v1beta1_File_To_v1beta2_File(in, out, s)
+}
+
+func autoConvert_v1beta2_File_To_v1beta1_File(in *v1beta2.File, out *File, s conversion.Scope) error {
+	out.Path = in.Path
+	out.Owner = in.Owner
+	out.Permissions = in.Permissions
+	out.Encoding = Encoding(in.Encoding)
+	out.Append = in.Append
+	out.Content = in.Content
+	out.ContentFrom = (*FileSource)(unsafe.Pointer(in.ContentFrom))
+	return nil
+}
+
+// Convert_v1beta2_File_To_v1beta1_File is an autogenerated conversion function.
+func Convert_v1beta2_File_To_v1beta1_File(in *v1beta2.File, out *File, s conversion.Scope) error {
+	return autoConvert_v1beta2_File_To_v1beta1_File(in, out, s)
+}
+
+func autoConvert_v1beta1_FileSource_To_v1beta2_FileSource(in *FileSource, out *v1beta2.FileSource, s conversion.Scope) error {
+	if err := Convert_v1beta1_SecretFileSource_To_v1beta2_SecretFileSource(&in.Secret, &out.Secret, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_v1beta1_FileSource_To_v1beta2_FileSource is an autogenerated conversion function.
+func Convert_v1beta1_FileSource_To_v1beta2_FileSource(in *FileSource, out *v1beta2.FileSource, s conversion.Scope) error {
+	return autoConvert_v1beta1_FileSource_To_v1beta2_FileSource(in, out, s)
+}
+
+func autoConvert_v1beta2_FileSource_To_v1beta1_FileSource(in *v1beta2.FileSource, out *FileSource, s conversion.Scope) error {
+	if err := Convert_v1beta2_SecretFileSource_To_v1beta1_SecretFileSource(&in.Secret, &out.Secret, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_v1beta2_FileSource_To_v1beta1_FileSource is an autogenerated conversion function.
+func Convert_v1beta2_FileSource_To_v1beta1_FileSource(in *v1beta2.FileSource, out *FileSource, s conversion.Scope) error {
+	return autoConvert_v1beta2_FileSource_To_v1beta1_FileSource(in, out, s)
+}
+
+func autoConvert_v1beta1_Filesystem_To_v1beta2_Filesystem(in *Filesystem, out *v1beta2.Filesystem, s conversion.Scope) error {
+	out.Device = in.Device
+	out.Filesystem = in.Filesystem
+	out.Label = in.Label
+	out.Partition = (*string)(unsafe.Pointer(in.Partition))
+	out.Overwrite = (*bool)(unsafe.Pointer(in.Overwrite))
+	out.ReplaceFS = (*string)(unsafe.Pointer(in.ReplaceFS))
+	out.ExtraOpts = *(*[]string)(unsafe.Pointer(&in.ExtraOpts))
+	return nil
+}
+
+// Convert_v1beta1_Filesystem_To_v1beta2_Filesystem is an autogenerated conversion function.
+func Convert_v1beta1_Filesystem_To_v1beta2_Filesystem(in *Filesystem, out *v1beta2.Filesystem, s conversion.Scope) error {
+	return autoConvert_v1beta1_Filesystem_To_v1beta2_Filesystem(in, out, s)
+}
+
+func autoConvert_v1beta2_Filesystem_To_v1beta1_Filesystem(in *v1beta2.Filesystem, out *Filesystem, s conversion.Scope) error {
+	out.Device = in.Device
+	out.Filesystem = in.Filesystem
+	out.Label = in.Label
+	out.Partition = (*string)(unsafe.Pointer(in.Partition))
+	out.Overwrite = (*bool)(unsafe.Pointer(in.Overwrite))
+	out.ReplaceFS = (*string)(unsafe.Pointer(in.ReplaceFS))
+	out.ExtraOpts = *(*[]string)(unsafe.Pointer(&in.ExtraOpts))
+	return nil
+}
+
+// Convert_v1beta2_Filesystem_To_v1beta1_Filesystem is an autogenerated conversion function.
+func Convert_v1beta2_Filesystem_To_v1beta1_Filesystem(in *v1beta2.Filesystem, out *Filesystem, s conversion.Scope) error {
+	return autoConvert_v1beta2_Filesystem_To_v1beta1_Filesystem(in, out, s)
+}
+
+func autoConvert_v1beta1_NTP_To_v1beta2_NTP(in *NTP, out *v1beta2.NTP, s conversion.Scope) error {
+	out.Servers = *(*[]string)(unsafe.Pointer(&in.Servers))
+	out.Enabled = (*bool)(unsafe.Pointer(in.Enabled))
+	return nil
+}
+
+// Convert_v1beta1_NTP_To_v1beta2_NTP is an autogenerated conversion function.
+func Convert_v1beta1_NTP_To_v1beta2_NTP(in *NTP, out *v1beta2.NTP, s conversion.Scope) error {
+	return autoConvert_v1beta1_NTP_To_v1beta2_NTP(in, out, s)
+}
+
+func autoConvert_v1beta2_NTP_To_v1beta1_NTP(in *v1beta2.NTP, out *NTP, s conversion.Scope) error {
+	out.Servers = *(*[]string)(unsafe.Pointer(&in.Servers))
+	out.Enabled = (*bool)(unsafe.Pointer(in.Enabled))
+	return nil
+}
+
+// Convert_v1beta2_NTP_To_v1beta1_NTP is an autogenerated conversion function.
+func Convert_v1beta2_NTP_To_v1beta1_NTP(in *v1beta2.NTP, out *NTP, s conversion.Scope) error {
+	return autoConvert_v1beta2_NTP_To_v1beta1_NTP(in, out, s)
+}
+
+func autoConvert_v1beta1_Partition_To_v1beta2_Partition(in *Partition, out *v1beta2.Partition, s conversion.Scope) error {
+	out.Device = in.Device
+	out.Layout = in.Layout
+	out.Overwrite = (*bool)(unsafe.Pointer(in.Overwrite))
+	out.TableType = (*string)(unsafe.Pointer(in.TableType))
+	return nil
+}
+
+// Convert_v1beta1_Partition_To_v1beta2_Partition is an autogenerated conversion function.
+func Convert_v1beta1_Partition_To_v1beta2_Partition(in *Partition, out *v1beta2.Partition, s conversion.Scope) error {
+	return autoConvert_v1beta1_Partition_To_v1beta2_Partition(in, out, s)
+}
+
+func autoConvert_v1beta2_Partition_To_v1beta1_Partition(in *v1beta2.Partition, out *Partition, s conversion.Scope) error {
+	out.Device = in.Device
+	out.Layout = in.Layout
+	out.Overwrite = (*bool)(unsafe.Pointer(in.Overwrite))
+	out.TableType = (*string)(unsafe.Pointer(in.TableType))
+	return nil
+}
+
+// Convert_v1beta2_Partition_To_v1beta1_Partition is an autogenerated conversion function.
+func Convert_v1beta2_Partition_To_v1beta1_Partition(in *v1beta2.Partition, out *Partition, s conversion.Scope) error {
+	return autoConvert_v1beta2_Partition_To_v1beta1_Partition(in, out, s)
+}
+
+func autoConvert_v1beta1_PasswdSource_To_v1beta2_PasswdSource(in *PasswdSource, out *v1beta2.PasswdSource, s conversion.Scope) error {
+	if err := Convert_v1beta1_SecretPasswdSource_To_v1beta2_SecretPasswdSource(&in.Secret, &out.Secret, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_v1beta1_PasswdSource_To_v1beta2_PasswdSource is an autogenerated conversion function.
+func Convert_v1beta1_PasswdSource_To_v1beta2_PasswdSource(in *PasswdSource, out *v1beta2.PasswdSource, s conversion.Scope) error {
+	return autoConvert_v1beta1_PasswdSource_To_v1beta2_PasswdSource(in, out, s)
+}
+
+func autoConvert_v1beta2_PasswdSource_To_v1beta1_PasswdSource(in *v1beta2.PasswdSource, out *PasswdSource, s conversion.Scope) error {
+	if err := Convert_v1beta2_SecretPasswdSource_To_v1beta1_SecretPasswdSource(&in.Secret, &out.Secret, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_v1beta2_PasswdSource_To_v1beta1_PasswdSource is an autogenerated conversion function.
+func Convert_v1beta2_PasswdSource_To_v1beta1_PasswdSource(in *v1beta2.PasswdSource, out *PasswdSource, s conversion.Scope) error {
+	return autoConvert_v1beta2_PasswdSource_To_v1beta1_PasswdSource(in, out, s)
+}
+
 func autoConvert_v1beta1_PauseContainer_To_v1beta2_PauseContainer(in *PauseContainer, out *v1beta2.PauseContainer, s conversion.Scope) error {
 	out.AccountNumber = in.AccountNumber
 	out.Version = in.Version
@@ -364,4 +662,90 @@ func autoConvert_v1beta2_PauseContainer_To_v1beta1_PauseContainer(in *v1beta2.Pa
 // Convert_v1beta2_PauseContainer_To_v1beta1_PauseContainer is an autogenerated conversion function.
 func Convert_v1beta2_PauseContainer_To_v1beta1_PauseContainer(in *v1beta2.PauseContainer, out *PauseContainer, s conversion.Scope) error {
 	return autoConvert_v1beta2_PauseContainer_To_v1beta1_PauseContainer(in, out, s)
+}
+
+func autoConvert_v1beta1_SecretFileSource_To_v1beta2_SecretFileSource(in *SecretFileSource, out *v1beta2.SecretFileSource, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Key = in.Key
+	return nil
+}
+
+// Convert_v1beta1_SecretFileSource_To_v1beta2_SecretFileSource is an autogenerated conversion function.
+func Convert_v1beta1_SecretFileSource_To_v1beta2_SecretFileSource(in *SecretFileSource, out *v1beta2.SecretFileSource, s conversion.Scope) error {
+	return autoConvert_v1beta1_SecretFileSource_To_v1beta2_SecretFileSource(in, out, s)
+}
+
+func autoConvert_v1beta2_SecretFileSource_To_v1beta1_SecretFileSource(in *v1beta2.SecretFileSource, out *SecretFileSource, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Key = in.Key
+	return nil
+}
+
+// Convert_v1beta2_SecretFileSource_To_v1beta1_SecretFileSource is an autogenerated conversion function.
+func Convert_v1beta2_SecretFileSource_To_v1beta1_SecretFileSource(in *v1beta2.SecretFileSource, out *SecretFileSource, s conversion.Scope) error {
+	return autoConvert_v1beta2_SecretFileSource_To_v1beta1_SecretFileSource(in, out, s)
+}
+
+func autoConvert_v1beta1_SecretPasswdSource_To_v1beta2_SecretPasswdSource(in *SecretPasswdSource, out *v1beta2.SecretPasswdSource, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Key = in.Key
+	return nil
+}
+
+// Convert_v1beta1_SecretPasswdSource_To_v1beta2_SecretPasswdSource is an autogenerated conversion function.
+func Convert_v1beta1_SecretPasswdSource_To_v1beta2_SecretPasswdSource(in *SecretPasswdSource, out *v1beta2.SecretPasswdSource, s conversion.Scope) error {
+	return autoConvert_v1beta1_SecretPasswdSource_To_v1beta2_SecretPasswdSource(in, out, s)
+}
+
+func autoConvert_v1beta2_SecretPasswdSource_To_v1beta1_SecretPasswdSource(in *v1beta2.SecretPasswdSource, out *SecretPasswdSource, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Key = in.Key
+	return nil
+}
+
+// Convert_v1beta2_SecretPasswdSource_To_v1beta1_SecretPasswdSource is an autogenerated conversion function.
+func Convert_v1beta2_SecretPasswdSource_To_v1beta1_SecretPasswdSource(in *v1beta2.SecretPasswdSource, out *SecretPasswdSource, s conversion.Scope) error {
+	return autoConvert_v1beta2_SecretPasswdSource_To_v1beta1_SecretPasswdSource(in, out, s)
+}
+
+func autoConvert_v1beta1_User_To_v1beta2_User(in *User, out *v1beta2.User, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Gecos = (*string)(unsafe.Pointer(in.Gecos))
+	out.Groups = (*string)(unsafe.Pointer(in.Groups))
+	out.HomeDir = (*string)(unsafe.Pointer(in.HomeDir))
+	out.Inactive = (*bool)(unsafe.Pointer(in.Inactive))
+	out.Shell = (*string)(unsafe.Pointer(in.Shell))
+	out.Passwd = (*string)(unsafe.Pointer(in.Passwd))
+	out.PasswdFrom = (*v1beta2.PasswdSource)(unsafe.Pointer(in.PasswdFrom))
+	out.PrimaryGroup = (*string)(unsafe.Pointer(in.PrimaryGroup))
+	out.LockPassword = (*bool)(unsafe.Pointer(in.LockPassword))
+	out.Sudo = (*string)(unsafe.Pointer(in.Sudo))
+	out.SSHAuthorizedKeys = *(*[]string)(unsafe.Pointer(&in.SSHAuthorizedKeys))
+	return nil
+}
+
+// Convert_v1beta1_User_To_v1beta2_User is an autogenerated conversion function.
+func Convert_v1beta1_User_To_v1beta2_User(in *User, out *v1beta2.User, s conversion.Scope) error {
+	return autoConvert_v1beta1_User_To_v1beta2_User(in, out, s)
+}
+
+func autoConvert_v1beta2_User_To_v1beta1_User(in *v1beta2.User, out *User, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Gecos = (*string)(unsafe.Pointer(in.Gecos))
+	out.Groups = (*string)(unsafe.Pointer(in.Groups))
+	out.HomeDir = (*string)(unsafe.Pointer(in.HomeDir))
+	out.Inactive = (*bool)(unsafe.Pointer(in.Inactive))
+	out.Shell = (*string)(unsafe.Pointer(in.Shell))
+	out.Passwd = (*string)(unsafe.Pointer(in.Passwd))
+	out.PasswdFrom = (*PasswdSource)(unsafe.Pointer(in.PasswdFrom))
+	out.PrimaryGroup = (*string)(unsafe.Pointer(in.PrimaryGroup))
+	out.LockPassword = (*bool)(unsafe.Pointer(in.LockPassword))
+	out.Sudo = (*string)(unsafe.Pointer(in.Sudo))
+	out.SSHAuthorizedKeys = *(*[]string)(unsafe.Pointer(&in.SSHAuthorizedKeys))
+	return nil
+}
+
+// Convert_v1beta2_User_To_v1beta1_User is an autogenerated conversion function.
+func Convert_v1beta2_User_To_v1beta1_User(in *v1beta2.User, out *User, s conversion.Scope) error {
+	return autoConvert_v1beta2_User_To_v1beta1_User(in, out, s)
 }

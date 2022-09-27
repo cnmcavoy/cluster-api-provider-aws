@@ -199,6 +199,11 @@ func (r *EKSConfigReconciler) joinWorker(ctx context.Context, cluster *clusterv1
 		PreBootstrapCommands:     config.Spec.PreBootstrapCommands,
 		PostBootstrapCommands:    config.Spec.PostBootstrapCommands,
 		BootstrapCommandOverride: config.Spec.BootstrapCommandOverride,
+		NTP:                      config.Spec.NTP,
+		Users:                    config.Spec.Users,
+		DiskSetup:                config.Spec.DiskSetup,
+		Mounts:                   config.Spec.Mounts,
+		Files:                    config.Spec.Files,
 	}
 	if config.Spec.PauseContainer != nil {
 		nodeInput.PauseContainerAccount = &config.Spec.PauseContainer.AccountNumber
@@ -226,6 +231,7 @@ func (r *EKSConfigReconciler) joinWorker(ctx context.Context, cluster *clusterv1
 		conditions.MarkFalse(config, eksbootstrapv1.DataSecretAvailableCondition, eksbootstrapv1.DataSecretGenerationFailedReason, clusterv1.ConditionSeverityWarning, "")
 		return ctrl.Result{}, err
 	}
+	log.Info("bootstrap worker join script (%+v): \n%s\n", nodeInput, string(userDataScript))
 
 	// store userdata as secret
 	if err := r.storeBootstrapData(ctx, cluster, config, userDataScript); err != nil {
