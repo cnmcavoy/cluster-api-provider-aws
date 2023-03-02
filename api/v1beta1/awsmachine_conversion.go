@@ -53,6 +53,7 @@ func (src *AWSMachine) ConvertTo(dstRaw conversion.Hub) error {
 			dst.Spec.ElasticIPPool.PublicIpv4PoolFallBackOrder = restored.Spec.ElasticIPPool.PublicIpv4PoolFallBackOrder
 		}
 	}
+	dst.Spec.InstanceDetails = restored.Spec.InstanceDetails
 
 	return nil
 }
@@ -115,6 +116,7 @@ func (r *AWSMachineTemplate) ConvertTo(dstRaw conversion.Hub) error {
 			dst.Spec.Template.Spec.ElasticIPPool.PublicIpv4PoolFallBackOrder = restored.Spec.Template.Spec.ElasticIPPool.PublicIpv4PoolFallBackOrder
 		}
 	}
+	dst.Spec.Template.Spec.InstanceDetails = restored.Spec.Template.Spec.InstanceDetails
 
 	return nil
 }

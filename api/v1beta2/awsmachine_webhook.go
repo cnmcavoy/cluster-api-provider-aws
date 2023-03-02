@@ -134,7 +134,23 @@ func (r *AWSMachine) ValidateUpdate(old runtime.Object) (admission.Warnings, err
 		delete(privateDNSName, "enableResourceNameDnsARecord")
 	}
 
+	// allow limited changes to instanceDetails if we are defaulting and the field was missing
+	if newInstanceDetails, ok := newAWSMachineSpec["instanceDetails"].([]interface{}); ok {
+		_, oldOk := oldAWSMachineSpec["instanceDetails"]
+		if !oldOk && len(newInstanceDetails) == 1 {
+			instanceDetails := map[string]interface{}{
+				"instanceType": oldAWSMachineSpec["instanceType"],
+			}
+			if spotMarketOptions, ok := oldAWSMachineSpec["spotMarketOptions"]; ok {
+				instanceDetails["spotMarketOptions"] = spotMarketOptions
+			}
+			oldAWSMachineSpec["instanceDetails"] = []interface{}{instanceDetails}
+		}
+	}
+
 	if !cmp.Equal(oldAWSMachineSpec, newAWSMachineSpec) {
+		awsMachine := newAWSMachine["metadata"].(map[string]interface{})
+		log.Info(fmt.Sprintf("AWSMachine spec for %s can not be modified. \n\tOld Spec: %#v\n\tNew Spec: %#v\n", awsMachine["name"].(string), oldAWSMachineSpec, newAWSMachineSpec))
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec"), "cannot be modified"))
 	}
 
@@ -404,6 +420,16 @@ func (r *AWSMachine) Default() {
 		}
 
 		r.Spec.Ignition.Version = DefaultIgnitionVersion
+	}
+
+	// always encode the instance type and spot market options into instance details if unset
+	if len(r.Spec.InstanceDetails) == 0 {
+		r.Spec.InstanceDetails = []AWSInstanceDetails{
+			{
+				InstanceType:      r.Spec.InstanceType,
+				SpotMarketOptions: r.Spec.SpotMarketOptions,
+			},
+		}
 	}
 }
 
