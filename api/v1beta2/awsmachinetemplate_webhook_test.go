@@ -137,6 +137,36 @@ func TestAWSMachineTemplateValidateUpdate(t *testing.T) {
 			},
 			wantError: false,
 		},
+		{
+			name: "allow setting instance details to the same instance types",
+			modifiedTemplate: &AWSMachineTemplate{
+				ObjectMeta: metav1.ObjectMeta{},
+				Spec: AWSMachineTemplateSpec{
+					Template: AWSMachineTemplateResource{
+						Spec: AWSMachineSpec{
+							InstanceType:    "test",
+							InstanceDetails: []AWSInstanceDetails{{InstanceType: "test"}},
+						},
+					},
+				},
+			},
+			wantError: false,
+		},
+		{
+			name: "disallow setting instance details to the new instance types",
+			modifiedTemplate: &AWSMachineTemplate{
+				ObjectMeta: metav1.ObjectMeta{},
+				Spec: AWSMachineTemplateSpec{
+					Template: AWSMachineTemplateResource{
+						Spec: AWSMachineSpec{
+							InstanceType:    "test",
+							InstanceDetails: []AWSInstanceDetails{{InstanceType: "test2"}},
+						},
+					},
+				},
+			},
+			wantError: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -149,7 +179,6 @@ func TestAWSMachineTemplateValidateUpdate(t *testing.T) {
 				Spec: AWSMachineTemplateSpec{
 					Template: AWSMachineTemplateResource{
 						Spec: AWSMachineSpec{
-							CloudInit:    CloudInit{},
 							InstanceType: "test",
 						},
 					},
