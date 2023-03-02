@@ -55,6 +55,8 @@ const (
 	VPCNotFound                             = "InvalidVpcID.NotFound"
 	VPCMissingParameter                     = "MissingParameter"
 	ErrCodeRepositoryAlreadyExistsException = "RepositoryAlreadyExistsException"
+	InsufficientInstanceCapacity            = "InsufficientInstanceCapacity"
+	UnfulfillableCapacity                   = "UnfulfillableCapacity"
 )
 
 var _ error = &EC2Error{}
@@ -217,6 +219,20 @@ func IsPermissionNotFoundError(err error) bool {
 		default:
 			return false
 		}
+	}
+	return false
+}
+
+func IsInsufficientInstanceCapacity(err error) bool {
+	if code, ok := Code(err); ok {
+		return code == InsufficientInstanceCapacity
+	}
+	return false
+}
+
+func IsInsufficientSpotInstanceCapacity(err error) bool {
+	if code, ok := Code(err); ok {
+		return code == UnfulfillableCapacity
 	}
 	return false
 }

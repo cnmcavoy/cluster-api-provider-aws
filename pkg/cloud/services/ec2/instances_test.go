@@ -321,7 +321,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -362,7 +362,7 @@ func TestCreateInstance(t *testing.T) {
 			},
 			expect: func(m *mocks.MockEC2APIMockRecorder) {
 				m.
-					DescribeInstanceTypesWithContext(context.TODO(), gomock.Eq(&ec2.DescribeInstanceTypesInput{
+					DescribeInstanceTypes(gomock.Eq(&ec2.DescribeInstanceTypesInput{
 						InstanceTypes: []*string{
 							aws.String("m5.large"),
 						},
@@ -438,7 +438,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.2xlarge",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.2xlarge"}},
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -951,6 +951,216 @@ func TestCreateInstance(t *testing.T) {
 			},
 		},
 		{
+			name: "with multiple instance details and the first instance type capacity is exhausted",
+			machine: &clusterv1.Machine{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"set": "node"},
+				},
+				Spec: clusterv1.MachineSpec{
+					Bootstrap: clusterv1.Bootstrap{
+						DataSecretName: ptr.To[string]("bootstrap-data"),
+					},
+				},
+			},
+			machineConfig: &infrav1.AWSMachineSpec{
+				AMI: infrav1.AMIReference{
+					ID: aws.String("abc"),
+				},
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m6a.4xlarge"}, {InstanceType: "m6i.4xlarge"}},
+			},
+			awsCluster: &infrav1.AWSCluster{
+				ObjectMeta: metav1.ObjectMeta{Name: "test"},
+				Spec: infrav1.AWSClusterSpec{
+					NetworkSpec: infrav1.NetworkSpec{
+						Subnets: infrav1.Subnets{
+							infrav1.SubnetSpec{
+								ID:       "subnet-1",
+								IsPublic: false,
+							},
+							infrav1.SubnetSpec{
+								IsPublic: false,
+							},
+						},
+					},
+				},
+				Status: infrav1.AWSClusterStatus{
+					Network: infrav1.NetworkStatus{
+						SecurityGroups: map[infrav1.SecurityGroupRole]infrav1.SecurityGroup{
+							infrav1.SecurityGroupControlPlane: {
+								ID: "1",
+							},
+							infrav1.SecurityGroupNode: {
+								ID: "2",
+							},
+							infrav1.SecurityGroupLB: {
+								ID: "3",
+							},
+						},
+						APIServerELB: infrav1.LoadBalancer{
+							DNSName: "test-apiserver.us-east-1.aws",
+						},
+					},
+				},
+			},
+			expect: func(m *mocks.MockEC2APIMockRecorder) {
+				m. // TODO: Restore these parameters, but with the tags as well
+					RunInstancesWithContext(context.TODO(), gomock.Any()).
+					DoAndReturn(func(input *ec2.RunInstancesInput) (*ec2.Reservation, error) {
+						if *input.InstanceType == "m6a.4xlarge" {
+							return nil, awserr.New(awserrors.InsufficientInstanceCapacity, "We currently do not have sufficient m6a.4xlarge capacity in the Availability Zone you requested", nil)
+						}
+						return &ec2.Reservation{
+							Instances: []*ec2.Instance{
+								{
+									State: &ec2.InstanceState{
+										Name: aws.String(ec2.InstanceStateNamePending),
+									},
+									IamInstanceProfile: &ec2.IamInstanceProfile{
+										Arn: aws.String("arn:aws:iam::123456789012:instance-profile/foo"),
+									},
+									InstanceId:     aws.String("two"),
+									InstanceType:   aws.String("m6i.4xlarge"),
+									SubnetId:       aws.String("subnet-1"),
+									ImageId:        aws.String("ami-1"),
+									RootDeviceName: aws.String("device-1"),
+									BlockDeviceMappings: []*ec2.InstanceBlockDeviceMapping{
+										{
+											DeviceName: aws.String("device-1"),
+											Ebs: &ec2.EbsInstanceBlockDevice{
+												VolumeId: aws.String("volume-1"),
+											},
+										},
+									},
+									Placement: &ec2.Placement{
+										AvailabilityZone: &az,
+									},
+								},
+							},
+						}, nil
+					}).Times(2)
+				m.
+					DescribeNetworkInterfaces(gomock.Any()).
+					Return(&ec2.DescribeNetworkInterfacesOutput{
+						NetworkInterfaces: []*ec2.NetworkInterface{},
+						NextToken:         nil,
+					}, nil)
+			},
+			check: func(instance *infrav1.Instance, err error) {
+				if err != nil {
+					t.Fatalf("did not expect error: %v", err)
+				}
+			},
+		},
+		{
+			name: "with multiple instance details and spot options and the spot capacity is exhausted",
+			machine: &clusterv1.Machine{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"set": "node"},
+				},
+				Spec: clusterv1.MachineSpec{
+					Bootstrap: clusterv1.Bootstrap{
+						DataSecretName: ptr.To[string]("bootstrap-data"),
+					},
+				},
+			},
+			machineConfig: &infrav1.AWSMachineSpec{
+				AMI: infrav1.AMIReference{
+					ID: aws.String("abc"),
+				},
+				InstanceDetails: []infrav1.AWSInstanceDetails{
+					{
+						InstanceType:      "m6a.4xlarge",
+						SpotMarketOptions: &infrav1.SpotMarketOptions{MaxPrice: aws.String("1")},
+					},
+					{
+						InstanceType: "m6i.4xlarge",
+					},
+				},
+			},
+			awsCluster: &infrav1.AWSCluster{
+				ObjectMeta: metav1.ObjectMeta{Name: "test"},
+				Spec: infrav1.AWSClusterSpec{
+					NetworkSpec: infrav1.NetworkSpec{
+						Subnets: infrav1.Subnets{
+							infrav1.SubnetSpec{
+								ID:       "subnet-1",
+								IsPublic: false,
+							},
+							infrav1.SubnetSpec{
+								IsPublic: false,
+							},
+						},
+					},
+				},
+				Status: infrav1.AWSClusterStatus{
+					Network: infrav1.NetworkStatus{
+						SecurityGroups: map[infrav1.SecurityGroupRole]infrav1.SecurityGroup{
+							infrav1.SecurityGroupControlPlane: {
+								ID: "1",
+							},
+							infrav1.SecurityGroupNode: {
+								ID: "2",
+							},
+							infrav1.SecurityGroupLB: {
+								ID: "3",
+							},
+						},
+						APIServerELB: infrav1.LoadBalancer{
+							DNSName: "test-apiserver.us-east-1.aws",
+						},
+					},
+				},
+			},
+			expect: func(m *mocks.MockEC2APIMockRecorder) {
+				m. // TODO: Restore these parameters, but with the tags as well
+					RunInstances(gomock.Any()).
+					DoAndReturn(func(input *ec2.RunInstancesInput) (*ec2.Reservation, error) {
+						if input.InstanceMarketOptions != nil {
+							return nil, awserr.New(awserrors.UnfulfillableCapacity, "Unable to fulfill capacity due to your request configuration. Please adjust your request and try again.", nil)
+						}
+						return &ec2.Reservation{
+							Instances: []*ec2.Instance{
+								{
+									State: &ec2.InstanceState{
+										Name: aws.String(ec2.InstanceStateNamePending),
+									},
+									IamInstanceProfile: &ec2.IamInstanceProfile{
+										Arn: aws.String("arn:aws:iam::123456789012:instance-profile/foo"),
+									},
+									InstanceId:     aws.String("two"),
+									InstanceType:   aws.String("m6i.4xlarge"),
+									SubnetId:       aws.String("subnet-1"),
+									ImageId:        aws.String("ami-1"),
+									RootDeviceName: aws.String("device-1"),
+									BlockDeviceMappings: []*ec2.InstanceBlockDeviceMapping{
+										{
+											DeviceName: aws.String("device-1"),
+											Ebs: &ec2.EbsInstanceBlockDevice{
+												VolumeId: aws.String("volume-1"),
+											},
+										},
+									},
+									Placement: &ec2.Placement{
+										AvailabilityZone: &az,
+									},
+								},
+							},
+						}, nil
+					}).Times(2)
+				m.
+					DescribeNetworkInterfaces(gomock.Any()).
+					Return(&ec2.DescribeNetworkInterfacesOutput{
+						NetworkInterfaces: []*ec2.NetworkInterface{},
+						NextToken:         nil,
+					}, nil)
+			},
+			check: func(instance *infrav1.Instance, err error) {
+				if err != nil {
+					t.Fatalf("did not expect error: %v", err)
+				}
+			},
+		},
+		{
 			name: "with ImageLookupOrg specified at the machine level",
 			machine: &clusterv1.Machine{
 				ObjectMeta: metav1.ObjectMeta{
@@ -964,8 +1174,8 @@ func TestCreateInstance(t *testing.T) {
 				},
 			},
 			machineConfig: &infrav1.AWSMachineSpec{
-				ImageLookupOrg: "test-org-123",
-				InstanceType:   "m6g.large",
+				ImageLookupOrg:  "test-org-123",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m6g.large"}},
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -1117,7 +1327,7 @@ func TestCreateInstance(t *testing.T) {
 				},
 			},
 			machineConfig: &infrav1.AWSMachineSpec{
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -1270,8 +1480,8 @@ func TestCreateInstance(t *testing.T) {
 				},
 			},
 			machineConfig: &infrav1.AWSMachineSpec{
-				InstanceType:   "m5.large",
-				ImageLookupOrg: "machine-level-image-lookup-org",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
+				ImageLookupOrg:  "machine-level-image-lookup-org",
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -1427,7 +1637,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 				Subnet: &infrav1.AWSResourceReference{
 					Filters: []infrav1.Filter{{
 						Name:   "tag:some-tag",
@@ -1553,7 +1763,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 				Subnet: &infrav1.AWSResourceReference{
 					ID: aws.String("matching-subnet"),
 				},
@@ -1679,7 +1889,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 				Subnet: &infrav1.AWSResourceReference{
 					ID: aws.String("non-matching-subnet"),
 				},
@@ -1771,7 +1981,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 				Subnet: &infrav1.AWSResourceReference{
 					ID: aws.String("matching-subnet"),
 				},
@@ -1897,7 +2107,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 				Subnet: &infrav1.AWSResourceReference{
 					ID: aws.String("subnet-1"),
 				},
@@ -1994,8 +2204,8 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
-				PublicIP:     aws.Bool(true),
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
+				PublicIP:        aws.Bool(true),
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -2076,7 +2286,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 				Subnet: &infrav1.AWSResourceReference{
 					ID: aws.String("public-subnet-1"),
 				},
@@ -2374,7 +2584,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 				Subnet: &infrav1.AWSResourceReference{
 					ID: aws.String("private-subnet-1"),
 				},
@@ -2472,7 +2682,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 				Subnet: &infrav1.AWSResourceReference{
 					Filters: []infrav1.Filter{{
 						Name:   "tag:some-tag",
@@ -2784,8 +2994,8 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
-				PublicIP:     aws.Bool(true),
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
+				PublicIP:        aws.Bool(true),
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -3058,8 +3268,8 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
-				PublicIP:     aws.Bool(true),
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
+				PublicIP:        aws.Bool(true),
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -3141,7 +3351,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 				NonRootVolumes: []infrav1.Volume{{
 					DeviceName: "device-2",
 					Size:       8,
@@ -3269,7 +3479,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType:         "m5.large",
+				InstanceDetails:      []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 				Tenancy:              "dedicated",
 				UncompressedUserData: &isUncompressedFalse,
 			},
@@ -3587,7 +3797,7 @@ func TestCreateInstance(t *testing.T) {
 				AMI: infrav1.AMIReference{
 					ID: aws.String("abc"),
 				},
-				InstanceType:         "m5.large",
+				InstanceDetails:      []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 				Tenancy:              "dedicated",
 				PlacementGroupName:   "placement-group1",
 				UncompressedUserData: &isUncompressedTrue,
@@ -3746,7 +3956,7 @@ func TestCreateInstance(t *testing.T) {
 				},
 			},
 			machineConfig: &infrav1.AWSMachineSpec{
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -3878,7 +4088,7 @@ func TestCreateInstance(t *testing.T) {
 				},
 			},
 			machineConfig: &infrav1.AWSMachineSpec{
-				InstanceType: "m5.large",
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -4011,8 +4221,8 @@ func TestCreateInstance(t *testing.T) {
 				},
 			},
 			machineConfig: &infrav1.AWSMachineSpec{
-				InstanceType: "m5.large",
-				SSHKeyName:   aws.String("specific-machine-ssh-key-name"),
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
+				SSHKeyName:      aws.String("specific-machine-ssh-key-name"),
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -4145,8 +4355,8 @@ func TestCreateInstance(t *testing.T) {
 				},
 			},
 			machineConfig: &infrav1.AWSMachineSpec{
-				InstanceType: "m5.large",
-				SSHKeyName:   nil,
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
+				SSHKeyName:      nil,
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -4276,8 +4486,8 @@ func TestCreateInstance(t *testing.T) {
 				},
 			},
 			machineConfig: &infrav1.AWSMachineSpec{
-				InstanceType: "m5.large",
-				SSHKeyName:   aws.String(""),
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
+				SSHKeyName:      aws.String(""),
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -4407,8 +4617,8 @@ func TestCreateInstance(t *testing.T) {
 				},
 			},
 			machineConfig: &infrav1.AWSMachineSpec{
-				InstanceType: "m5.large",
-				SSHKeyName:   aws.String(""),
+				InstanceDetails: []infrav1.AWSInstanceDetails{{InstanceType: "m5.large"}},
+				SSHKeyName:      aws.String(""),
 			},
 			awsCluster: &infrav1.AWSCluster{
 				ObjectMeta: metav1.ObjectMeta{Name: "test"},
