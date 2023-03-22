@@ -17,6 +17,7 @@ limitations under the License.
 package v1beta2
 
 import (
+	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -114,7 +115,7 @@ func (r *AWSMachine) ValidateUpdate(old runtime.Object) error {
 	}
 
 	// allow limited changes to instanceDetails if we are defaulting and the field was missing
-	if newInstanceDetails, ok := newAWSMachineSpec["instanceDetails"].(map[string]interface{}); ok {
+	if newInstanceDetails, ok := newAWSMachineSpec["instanceDetails"].([]interface{}); ok {
 		_, oldOk := oldAWSMachineSpec["instanceDetails"]
 		if !oldOk && len(newInstanceDetails) == 1 {
 			instanceDetails := map[string]interface{}{
@@ -128,6 +129,8 @@ func (r *AWSMachine) ValidateUpdate(old runtime.Object) error {
 	}
 
 	if !cmp.Equal(oldAWSMachineSpec, newAWSMachineSpec) {
+		awsMachine := newAWSMachine["metadata"].(map[string]interface{})
+		log.Info(fmt.Sprintf("AWSMachine spec for %s can not be modified. \n\tOld Spec: %#v\n\tNew Spec: %#v\n", awsMachine["name"].(string), oldAWSMachineSpec, newAWSMachineSpec))
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec"), "cannot be modified"))
 	}
 
