@@ -57,6 +57,7 @@ const (
 	ErrCodeRepositoryAlreadyExistsException = "RepositoryAlreadyExistsException"
 	InsufficientInstanceCapacity            = "InsufficientInstanceCapacity"
 	UnfulfillableCapacity                   = "UnfulfillableCapacity"
+	UnsupportedConfiguration                = "Unsupported"
 )
 
 var _ error = &EC2Error{}
@@ -233,6 +234,13 @@ func IsInsufficientInstanceCapacity(err error) bool {
 func IsInsufficientSpotInstanceCapacity(err error) bool {
 	if code, ok := Code(err); ok {
 		return code == UnfulfillableCapacity
+	}
+	return false
+}
+
+func IsUnsupportedConfiguration(err error) bool {
+	if code, ok := Code(err); ok {
+		return code == UnsupportedConfiguration
 	}
 	return false
 }
