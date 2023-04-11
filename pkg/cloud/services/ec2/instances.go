@@ -245,7 +245,7 @@ func (s *Service) CreateInstance(scope *scope.MachineScope, userData []byte, use
 		}
 
 		// try another instance detail if we have one
-		if awserrors.IsInsufficientInstanceCapacity(errors.Unwrap(err)) || awserrors.IsInsufficientSpotInstanceCapacity(errors.Unwrap(err)) {
+		if awserrors.IsInsufficientInstanceCapacity(errors.Unwrap(err)) || awserrors.IsInsufficientSpotInstanceCapacity(errors.Unwrap(err)) || awserrors.IsUnsupportedConfiguration(errors.Unwrap(err)) {
 			s.scope.Debug("Insufficient instance capacity to launch instance: "+awserrors.Message(err), "machine-role", scope.Role(), "instance-type", input.Type, "spot-options", input.SpotMarketOptions)
 			continue
 		}
