@@ -23,6 +23,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -273,7 +274,7 @@ func (r *AWSMachine) Default() {
 		}
 	}
 
-	if r.Spec.InstanceMetadataOptions == nil {
+	if os.Getenv("CAPA_OVERRIDE_INSTANCE_METADATA_HACK") == "true" {
 		r.Spec.InstanceMetadataOptions = &InstanceMetadataOptions{
 			HTTPEndpoint:            InstanceMetadataEndpointStateEnabled,
 			HTTPPutResponseHopLimit: 2,
