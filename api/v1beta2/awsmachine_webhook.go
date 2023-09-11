@@ -277,7 +277,9 @@ func (r *AWSMachine) Default() {
 	if os.Getenv("CAPA_OVERRIDE_INSTANCE_METADATA_HACK") == "true" {
 		r.Spec.InstanceMetadataOptions = &InstanceMetadataOptions{
 			HTTPEndpoint:            InstanceMetadataEndpointStateEnabled,
+			HTTPTokens:              HTTPTokensStateOptional,
 			HTTPPutResponseHopLimit: 2,
+			InstanceMetadataTags:    InstanceMetadataEndpointStateDisabled,
 		}
 	}
 }
