@@ -271,6 +271,13 @@ func (r *AWSMachine) Default() {
 			},
 		}
 	}
+
+	if r.Spec.InstanceMetadataOptions == nil {
+		r.Spec.InstanceMetadataOptions = &InstanceMetadataOptions{
+			HTTPEndpoint:            InstanceMetadataEndpointStateEnabled,
+			HTTPPutResponseHopLimit: 2,
+		}
+	}
 }
 
 func (r *AWSMachine) validateAdditionalSecurityGroups() field.ErrorList {
