@@ -640,13 +640,11 @@ func (r *AWSMachineReconciler) reconcileOperationalState(ec2svc services.EC2Inte
 	}
 	conditions.MarkTrue(machineScope.AWSMachine, infrav1.SecurityGroupsReadyCondition)
 
-	/*
-		err = r.ensureInstanceMetadataOptions(ec2svc, instance, machineScope.AWSMachine)
-		if err != nil {
-			machineScope.Error(err, "failed to ensure instance metadata options")
-			return err
-		}
-	*/
+	err = r.ensureInstanceMetadataOptions(ec2svc, instance, machineScope.AWSMachine)
+	if err != nil {
+		machineScope.Error(err, "failed to ensure instance metadata options")
+		return err
+	}
 	return nil
 }
 
