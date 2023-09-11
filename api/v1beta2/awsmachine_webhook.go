@@ -115,6 +115,10 @@ func (r *AWSMachine) ValidateUpdate(old runtime.Object) error {
 		delete(cloudInit, "secureSecretsBackend")
 	}
 
+	// allow changes to ec2 metadata
+	delete(oldAWSMachineSpec, "instanceMetadataOptions")
+	delete(newAWSMachineSpec, "instanceMetadataOptions")
+
 	// allow limited changes to instanceDetails if we are defaulting and the field was missing
 	if newInstanceDetails, ok := newAWSMachineSpec["instanceDetails"].([]interface{}); ok {
 		_, oldOk := oldAWSMachineSpec["instanceDetails"]
