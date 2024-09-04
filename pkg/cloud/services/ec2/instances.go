@@ -370,9 +370,15 @@ func (s *Service) findSubnet(scope *scope.MachineScope) (string, error) {
 		}
 		// prefer a subnet in the cluster VPC if multiple match
 		clusterVPC := s.scope.VPC().ID
+		s.scope.Info(fmt.Sprintf("Filtered subnets (VPC: %s) unsorted: %v", clusterVPC, filtered))
 		sort.SliceStable(filtered, func(i, j int) bool {
-			return strings.Compare(*filtered[i].VpcId, clusterVPC) <= strings.Compare(*filtered[j].VpcId, clusterVPC)
+			if *filtered[i].VpcId == clusterVPC {
+				return true
+			}
+			return false
 		})
+		s.scope.Info(fmt.Sprintf("Filtered subnets sorted: %v", filtered))
+
 		if len(filtered) == 0 {
 			errMessage = fmt.Sprintf("failed to run machine %q, found %d subnets matching criteria but post-filtering failed.",
 				scope.Name(), len(subnets)) + errMessage
